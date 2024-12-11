@@ -95,7 +95,7 @@ export default class Logger {
     const logType: LogType = {
       prefix: "[DEBUG]",
       emoji: "🔧",
-      color: ConsoleColor.FgMagenta,
+      color: ConsoleColor.FgGreen,
     };
     this.log(LogLevel.Debug, "debug", content, logType);
   }
