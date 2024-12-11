@@ -158,7 +158,7 @@ export interface RCEErrorPayload extends EventPayload {
     error: string;
 }
 export interface ServiceStateEventPayload extends EventPayload {
-    state: "STOPPING" | "MAINTENANCE" | "UPDATING" | "STOPPED" | "STARTING" | "RUNNING";
+    state: "Stopping" | "Maintenance" | "Updating" | "Stopped" | "Starting" | "Running";
 }
 export interface RCELogPayload {
     level: LogLevel;

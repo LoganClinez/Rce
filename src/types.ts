@@ -202,12 +202,12 @@ export interface RCEErrorPayload extends EventPayload {
 
 export interface ServiceStateEventPayload extends EventPayload {
   state:
-    | "STOPPING"
-    | "MAINTENANCE"
-    | "UPDATING"
-    | "STOPPED"
-    | "STARTING"
-    | "RUNNING";
+    | "Stopping"
+    | "Maintenance"
+    | "Updating"
+    | "Stopped"
+    | "Starting"
+    | "Running";
 }
 
 export interface RCELogPayload {
