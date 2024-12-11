@@ -2,6 +2,7 @@ import { LogLevel, RCEEvent } from "../constants";
 import { inspect } from "util";
 import { type LoggerOptions } from "../types";
 import fs from "fs";
+import path from "path";
 import RCEManager from "./RCEManager";
 
 enum ConsoleColor {
@@ -24,25 +25,61 @@ export default class Logger {
   private level: LogLevel;
   private file: string | undefined;
 
+  private static LOG_TYPES: Record<string, LogType> = {
+    warn: { prefix: "[WARNING]", emoji: "⚠️", color: ConsoleColor.FgYellow },
+    info: { prefix: "[INFO]", emoji: "💬", color: ConsoleColor.FgCyan },
+    debug: { prefix: "[DEBUG]", emoji: "🔧", color: ConsoleColor.FgMagenta },
+    error: { prefix: "[ERROR]", emoji: "❌", color: ConsoleColor.FgRed },
+  };
+
   public constructor(emitter: RCEManager, opts: LoggerOptions) {
     this.level = opts.logLevel ?? LogLevel.Info;
     this.file = opts.logFile;
     this.emitter = emitter;
+
+    if (this.file) {
+      this.validateFilePath();
+    }
   }
 
-  private logToFile(type: string, content: any): void {
+  private validateFilePath(): void {
+    if (this.file && !fs.existsSync(this.file)) {
+      const dir = path.dirname(this.file);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      fs.writeFileSync(this.file, "");
+    }
+  }
+
+  private handleFileSize(): void {
     if (this.file) {
       const stats = fs.statSync(this.file);
-      if (stats.size > 300000000) {
+      if (stats.size > 300_000_000) {
+        const archiveName = `${this.file}.${Date.now()}.log`;
+        fs.renameSync(this.file, archiveName);
         fs.writeFileSync(this.file, "");
       }
+    }
+  }
+
+  private async logToFileAsync(type: string, content: any): Promise<void> {
+    if (this.file) {
+      await fs.promises.stat(this.file).then(stats => {
+        if (stats.size > 300_000_000) {
+          const archiveName = `${this.file}.${Date.now()}.log`;
+          return fs.promises.rename(this.file, archiveName).then(() => {
+            fs.promises.writeFile(this.file!, "");
+          });
+        }
+      }).catch(() => null);
 
       const logMessage =
         typeof content === "string"
           ? `[${type.toUpperCase()}]: ${content}\n`
           : `[${type.toUpperCase()}]: ${inspect(content, { depth: 5 })}\n`;
 
-      fs.appendFileSync(this.file, logMessage);
+      await fs.promises.appendFile(this.file, logMessage);
     }
   }
 
@@ -52,62 +89,50 @@ export default class Logger {
       : inspect(content, { depth: 5 });
   }
 
+  private formatTimestamp(date: Date, format = "hh:mm:ss A"): string {
+    return date.toLocaleTimeString([], { hour12: true });
+  }
+
   private log(
     level: LogLevel,
     type: string,
     content: any,
     logType: LogType
   ): void {
-    this.logToFile(type, content);
-  
+    this.handleFileSize();
+    this.logToFileAsync(type, content).catch(console.error);
+
     if (this.level !== LogLevel.None && level <= this.level) {
       const date = new Date();
-      const timestamp = date.toLocaleTimeString([], { hour12: true });
+      const timestamp = this.formatTimestamp(date);
 
-      // Format the message as a single line: timestamp, log level, emoji, and content
       const formattedMessage = `\x1b[90m[${timestamp}]\x1b[0m  ${logType.color}${logType.prefix}${ConsoleColor.Reset}  ${logType.emoji}  ${this.format(content)}`;
-  
-      // Output the formatted message
+
       console.log(formattedMessage);
-  
-      // Emit the log event
+
       this.emitter.emit(RCEEvent.Log, { level, content: this.format(content) });
+      this.emitter.emit(RCEEvent.LogRaw, { level, type, content });
     }
   }
 
+  public logMessage(level: LogLevel, type: keyof typeof Logger.LOG_TYPES, content: any): void {
+    const logType = Logger.LOG_TYPES[type];
+    this.log(level, type, content, logType);
+  }
+
   public warn(content: any): void {
-    const logType: LogType = {
-      prefix: "[WARNING]",
-      emoji: "⚠️",
-      color: ConsoleColor.FgYellow,
-    };
-    this.log(LogLevel.Warn, "warn", content, logType);
+    this.logMessage(LogLevel.Warn, "warn", content);
   }
 
   public info(content: any): void {
-    const logType: LogType = {
-      prefix: "[INFO]",
-      emoji: "💬",
-      color: ConsoleColor.FgCyan,
-    };
-    this.log(LogLevel.Info, "info", content, logType);
+    this.logMessage(LogLevel.Info, "info", content);
   }
 
   public debug(content: any): void {
-    const logType: LogType = {
-      prefix: "[DEBUG]",
-      emoji: "🔧",
-      color: ConsoleColor.FgMagenta,
-    };
-    this.log(LogLevel.Debug, "debug", content, logType);
+    this.logMessage(LogLevel.Debug, "debug", content);
   }
 
   public error(content: any): void {
-    const logType: LogType = {
-      prefix: "[ERROR]",
-      emoji: "❌",
-      color: ConsoleColor.FgRed,
-    };
-    this.log(LogLevel.Error, "error", content, logType);
+    this.logMessage(LogLevel.Error, "error", content);
   }
 }
