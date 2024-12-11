@@ -3,6 +3,7 @@ import { inspect } from "util";
 import { type LoggerOptions } from "../types";
 import fs from "fs";
 import path from "path";
+import { v4 as uuidv4 } from "uuid";
 import RCEManager from "./RCEManager";
 
 enum ConsoleColor {
@@ -56,8 +57,11 @@ export default class Logger {
     if (this.file) {
       const stats = fs.statSync(this.file);
       if (stats.size > 300_000_000) {
-        const archiveName = `${this.file}.${Date.now()}.log`;
+        const archiveName = `${this.file}.${uuidv4()}.log`;
         fs.renameSync(this.file, archiveName);
+        if (!fs.existsSync(archiveName)) {
+          console.error(`Failed to archive log file: ${archiveName}`);
+        }
         fs.writeFileSync(this.file, "");
       }
     }
@@ -67,12 +71,17 @@ export default class Logger {
     if (this.file) {
       await fs.promises.stat(this.file).then(stats => {
         if (stats.size > 300_000_000) {
-          const archiveName = `${this.file}.${Date.now()}.log`;
+          const archiveName = `${this.file}.${uuidv4()}.log`;
           return fs.promises.rename(this.file, archiveName).then(() => {
+            if (!fs.existsSync(archiveName)) {
+              console.error(`Failed to archive log file: ${archiveName}`);
+            }
             fs.promises.writeFile(this.file!, "");
           });
         }
-      }).catch(() => null);
+      }).catch(err => {
+        console.error(`Error handling log file size: ${err.message}`);
+      });
 
       const logMessage =
         typeof content === "string"
