@@ -46,8 +46,8 @@ class Logger {
         if (this.level !== constants_1.LogLevel.None && level <= this.level) {
             const date = new Date();
             const timestamp = date.toLocaleTimeString([], { hour12: false });
-            const padding = " ".repeat(Math.max(0, 15 - logType.prefix.length));
-            const formattedMessage = `\x1b[90m[${timestamp}]\x1b[0m ${logType.color}${logType.prefix}${padding}${logType.emoji}${ConsoleColor.Reset}`;
+            // Instead of padding, ensure that the logType.prefix and emoji are together without extra spaces.
+            const formattedMessage = `\x1b[90m[${timestamp}]\x1b[0m ${logType.color}${logType.prefix} ${logType.emoji}${ConsoleColor.Reset}`;
             console.log(formattedMessage, this.format(content));
             this.emitter.emit(constants_1.RCEEvent.Log, { level, content: this.format(content) });
         }
@@ -72,7 +72,7 @@ class Logger {
         const logType = {
             prefix: "[DEBUG]",
             emoji: "🔧",
-            color: ConsoleColor.FgMagenta,
+            color: ConsoleColor.FgGreen,
         };
         this.log(constants_1.LogLevel.Debug, "debug", content, logType);
     }
