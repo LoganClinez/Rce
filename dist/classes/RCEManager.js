@@ -419,18 +419,18 @@ class RCEManager extends types_1.RCEEvents {
             if (log.includes("servergibs_bradley") &&
                 log.startsWith("realm ;entity ;group ;parent ;name") &&
                 !server.flags.includes("bradley")) {
+                const { identifier, flags } = server;
+                // Add the "bradley" flag to the server
                 server.flags.push("bradley");
-                this.servers.set(server.identifier, {
-                    ...server,
-                    flags: server.flags,
-                });
-                setTimeout(() => {
-                    server.flags = server.flags.filter((f) => f !== "bradley");
-                    this.servers.set(server.identifier, {
-                        ...server,
-                        flags: server.flags,
-                    });
-                }, 360_000);
+                this.servers.set(identifier, { ...server, flags: [...flags, "bradley"] });
+                // Function to remove "bradley" flag after timeout
+                const removeBradleyFlag = () => {
+                    server.flags = server.flags.filter(f => f !== "bradley");
+                    this.servers.set(identifier, { ...server, flags: server.flags });
+                };
+                // Set timeout to remove the "bradley" flag after 360,000ms (6 minutes)
+                setTimeout(removeBradleyFlag, 360_000);
+                // Emit event
                 return this.emit(constants_1.RCEEvent.EventStart, {
                     server,
                     event: "Bradley APC Debris",
