@@ -23,7 +23,7 @@ export interface RustServer {
   identifier: string;
   serverId: number;
   trueServerId?: number;
-  region: "US" | "EU";
+  region: "US" | "ES";
   refreshPlayers?: number;
   refreshPlayersInterval?: NodeJS.Timeout;
   rfBroadcasting?: boolean;
