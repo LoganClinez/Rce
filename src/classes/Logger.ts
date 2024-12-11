@@ -62,10 +62,10 @@ export default class Logger {
   
     if (this.level !== LogLevel.None && level <= this.level) {
       const date = new Date();
-      const timestamp = date.toLocaleTimeString([], { hour12: false });
+      const timestamp = date.toLocaleTimeString([], { hour12: true });
 
       // Format the message as a single line: timestamp, log level, emoji, and content
-      const formattedMessage = `\x1b[90m[${timestamp}]\x1b[0m ${logType.color}${logType.prefix}${ConsoleColor.Reset} ${logType.emoji} ${this.format(content)}`;
+      const formattedMessage = `\x1b[90m[${timestamp}]\x1b[0m  ${logType.color}${logType.prefix}${ConsoleColor.Reset}  ${logType.emoji}  ${this.format(content)}`;
   
       // Output the formatted message
       console.log(formattedMessage);
@@ -97,7 +97,7 @@ export default class Logger {
     const logType: LogType = {
       prefix: "[DEBUG]",
       emoji: "🔧",
-      color: ConsoleColor.FgGreen,
+      color: ConsoleColor.FgMagenta,
     };
     this.log(LogLevel.Debug, "debug", content, logType);
   }
