@@ -1,6 +1,6 @@
 {
   "name": "gportal-webscoket",
-  "version": "2.6.2",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "directories": {
     "test": "tests"
