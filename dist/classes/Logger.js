@@ -46,16 +46,18 @@ class Logger {
         if (this.level !== constants_1.LogLevel.None && level <= this.level) {
             const date = new Date();
             const timestamp = date.toLocaleTimeString([], { hour12: false });
-            // Instead of padding, ensure that the logType.prefix and emoji are together without extra spaces.
+            // Format the message as a single line: timestamp, log level, emoji, and content
             const formattedMessage = `\x1b[90m[${timestamp}]\x1b[0m ${logType.color}${logType.prefix}${ConsoleColor.Reset} ${logType.emoji} ${this.format(content)}`;
-            console.log(formattedMessage, this.format(content));
+            // Output the formatted message
+            console.log(formattedMessage);
+            // Emit the log event
             this.emitter.emit(constants_1.RCEEvent.Log, { level, content: this.format(content) });
         }
     }
     warn(content) {
         const logType = {
             prefix: "[WARNING]",
-            emoji: "⚠️ ",
+            emoji: "⚠️",
             color: ConsoleColor.FgYellow,
         };
         this.log(constants_1.LogLevel.Warn, "warn", content, logType);
