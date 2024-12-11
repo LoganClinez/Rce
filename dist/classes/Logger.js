@@ -47,7 +47,7 @@ class Logger {
     handleFileSize() {
         if (this.file) {
             const stats = fs_1.default.statSync(this.file);
-            if (stats.size > 300_000_000) {
+            if (stats.size > 5) {
                 const archiveName = `${this.file}.${(0, uuid_1.v4)()}.log`;
                 fs_1.default.renameSync(this.file, archiveName);
                 fs_1.default.writeFileSync(this.file, "");
