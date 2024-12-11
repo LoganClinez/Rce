@@ -56,7 +56,7 @@ export default class Logger {
   private handleFileSize(): void {
     if (this.file) {
       const stats = fs.statSync(this.file);
-      if (stats.size > 5) {
+      if (stats.size > 300_000_000) {
         const archiveName = `${this.file}.${uuidv4()}.log`;
         fs.renameSync(this.file, archiveName);
         fs.writeFileSync(this.file, "");
