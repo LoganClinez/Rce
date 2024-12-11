@@ -1,5 +1,5 @@
 {
-  "name": "gportal-webscoket",
+  "name": "gportal-handler",
   "version": "1.0.0",
   "main": "dist/index.js",
   "directories": {
