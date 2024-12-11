@@ -573,20 +573,22 @@ export default class RCEManager extends RCEEvents {
         log.startsWith("realm ;entity ;group ;parent ;name") &&
         !server.flags.includes("heli")
       ) {
+        const { identifier, flags } = server;
+
+        // Add the "heli" flag to the server
         server.flags.push("heli");
-        this.servers.set(server.identifier, {
-          ...server,
-          flags: server.flags,
-        });
+        this.servers.set(identifier, { ...server, flags: [...flags, "heli"] });
 
-        setTimeout(() => {
-          server.flags = server.flags.filter((f) => f !== "heli");
-          this.servers.set(server.identifier, {
-            ...server,
-            flags: server.flags,
-          });
-        }, 360_000);
+        // Function to remove "heli" flag after timeout
+        const removeHeliFlag = () => {
+          server.flags = server.flags.filter(f => f !== "heli");
+          this.servers.set(identifier, { ...server, flags: server.flags });
+        };
 
+        // Set timeout to remove the "heli" flag after 360,000ms (6 minutes)
+        setTimeout(removeHeliFlag, 360_000);
+
+        // Emit event
         return this.emit(RCEEvent.EventStart, {
           server,
           event: "Patrol Helicopter Debris",
