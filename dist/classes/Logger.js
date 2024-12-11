@@ -47,7 +47,7 @@ class Logger {
             const date = new Date();
             const timestamp = date.toLocaleTimeString([], { hour12: false });
             // Instead of padding, ensure that the logType.prefix and emoji are together without extra spaces.
-            const formattedMessage = `\x1b[90m[${timestamp}]\x1b[0m ${logType.color}${logType.prefix} ${logType.emoji}${ConsoleColor.Reset}`;
+            const formattedMessage = `\x1b[90m[${timestamp}]\x1b[0m ${logType.color}${logType.prefix}${ConsoleColor.Reset} ${logType.emoji} ${this.format(content)}`;
             console.log(formattedMessage, this.format(content));
             this.emitter.emit(constants_1.RCEEvent.Log, { level, content: this.format(content) });
         }
