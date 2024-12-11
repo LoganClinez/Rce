@@ -23,7 +23,7 @@
   "devDependencies": {
     "@types/node": "^20.14.14",
     "@types/ws": "^8.5.11",
-    "#types/uuid": "*"
+    "@types/uuid": "*"
   },
   "dependencies": {
     "cheerio": "^1.0.0",
