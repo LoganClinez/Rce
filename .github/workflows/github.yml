@@ -1,0 +1,39 @@
+permissions:
+  contents: write
+
+name: "github_publish"
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          registry-url: "https://npm.pkg.github.com"
+      - name: Install dependencies
+        run: |
+          npm install
+      - name: Install development dependencies
+        run: |
+          npm install -g typescript
+      - name: Compile
+        run: tsc
+      - name: Setup git configuration
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Push
+        run: |
+          git add .
+          git commit -m "Push compiled dist folder"
+          git push
+        env:
+          GITHUB_TOKEN: ${{secrets.GIT_TOKEN}}
