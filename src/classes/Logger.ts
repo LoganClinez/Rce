@@ -59,9 +59,6 @@ export default class Logger {
       if (stats.size > 300_000_000) {
         const archiveName = `${this.file}.${uuidv4()}.log`;
         fs.renameSync(this.file, archiveName);
-        if (!fs.existsSync(archiveName)) {
-          console.error(`Failed to archive log file: ${archiveName}`);
-        }
         fs.writeFileSync(this.file, "");
       }
     }
@@ -69,19 +66,12 @@ export default class Logger {
 
   private async logToFileAsync(type: string, content: any): Promise<void> {
     if (this.file) {
-      await fs.promises.stat(this.file).then(stats => {
-        if (stats.size > 300_000_000) {
-          const archiveName = `${this.file}.${uuidv4()}.log`;
-          return fs.promises.rename(this.file, archiveName).then(() => {
-            if (!fs.existsSync(archiveName)) {
-              console.error(`Failed to archive log file: ${archiveName}`);
-            }
-            fs.promises.writeFile(this.file!, "");
-          });
-        }
-      }).catch(err => {
-        console.error(`Error handling log file size: ${err.message}`);
-      });
+      const stats = await fs.promises.stat(this.file).catch(() => null);
+      if (stats && stats.size > 300_000_000) {
+        const archiveName = `${this.file}.${uuidv4()}.log`;
+        await fs.promises.rename(this.file, archiveName);
+        await fs.promises.writeFile(this.file, "");
+      }
 
       const logMessage =
         typeof content === "string"
@@ -98,7 +88,7 @@ export default class Logger {
       : inspect(content, { depth: 5 });
   }
 
-  private formatTimestamp(date: Date, format = "hh:mm:ss A"): string {
+  private formatTimestamp(date: Date): string {
     return date.toLocaleTimeString([], { hour12: true });
   }
 
@@ -112,15 +102,11 @@ export default class Logger {
     this.logToFileAsync(type, content).catch(console.error);
 
     if (this.level !== LogLevel.None && level <= this.level) {
-      const date = new Date();
-      const timestamp = this.formatTimestamp(date);
-
+      const timestamp = this.formatTimestamp(new Date());
       const formattedMessage = `\x1b[90m[${timestamp}]\x1b[0m  ${logType.color}${logType.prefix}${ConsoleColor.Reset}  ${logType.emoji}  ${this.format(content)}`;
 
       console.log(formattedMessage);
-
       this.emitter.emit(RCEEvent.Log, { level, content: this.format(content) });
-      this.emitter.emit(RCEEvent.LogRaw, { level, type, content });
     }
   }
 
