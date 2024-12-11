@@ -2,4 +2,3 @@ node_modules
 tests
 rce.log
 .vscode/settings.json
-/dist
