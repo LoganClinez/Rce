@@ -42,7 +42,7 @@ const killData = [
   { id: "beartrap", name: "Bear Trap", type: KillPlayerType.Entity },
 ] as const;
 
-export type KillDataEntry =
+export type killData =
   | (typeof killData)[number]
   | { id: number; name: "Scientist"; type: KillPlayerType.Npc }
   | { id: string; name: string; type: KillPlayerType.Player };
